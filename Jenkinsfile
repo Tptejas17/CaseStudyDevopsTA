@@ -8,11 +8,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Tptejas17/CaseStudyDevopsTA.git'
-            }
-        }
+        // REMOVE Checkout stage since it's already handled by Pipeline from SCM
 
         stage('Build & Push Docker Image') {
             steps {
@@ -74,5 +70,4 @@ pipeline {
         }
     }
 }
-
 
