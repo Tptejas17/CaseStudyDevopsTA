@@ -9,14 +9,14 @@ pipeline {
     stages {
         stage('Clone Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Tptejas17/CaseStudyDevopsTA.git'
+                echo "Using code already checked out by Jenkins"
             }
         }
 
         stage('Build & Push Docker Image') {
             steps {
                 script {
-                    GIT_COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    def GIT_COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     sh "chmod +x scripts/build_and_push.sh"
                     sh "./scripts/build_and_push.sh ${DOCKERHUB_USER} ${GIT_COMMIT}"
                 }
@@ -25,10 +25,9 @@ pipeline {
 
         stage('Deploy via Ansible') {
             steps {
-                script {
-                    sh "ansible-playbook -i ansible/hosts.ini ansible/deploy.yml"
-                }
+                sh "ansible-playbook -i ansible/hosts.ini ansible/deploy.yml"
             }
         }
     }
 }
+
