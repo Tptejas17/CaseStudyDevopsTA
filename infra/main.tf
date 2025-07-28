@@ -1,32 +1,32 @@
+# Provider
 provider "aws" {
   region = var.region
 }
 
-resource "aws_key_pair" "mypair"{
-  key_name = "terraformkey"
-  public_key = file("terraformkey.pub")
+# Key-Pair Login
+resource "aws_key_pair" "my_key" {
+  key_name   = "devops-server-key"
+  public_key = file("devops-server-key.pub")
 }
 
-resource "aws_instance" "web" {
-  ami                    = "ami-0f918f7e67a3323f0"
-  instance_type          = var.instance_type
-  key_name               = aws_key_pair.mypair.key_name
-  associate_public_ip_address = true
-  vpc_security_group_ids = [aws_security_group.allow.id]
+# Default VPC
+resource "aws_default_vpc" "default" {}
 
-  tags = {
-    Name = "DevOpsCaseStudyInstance"
-  }
+# Default Subnet
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = "ap-south-1a"
 }
 
-resource "aws_security_group" "allow" {
-  name        = "allow_ssh_http"
+# Security Group
+resource "aws_security_group" "my_sec_grp" {
+  vpc_id = aws_default_vpc.default.id
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "SSH open"
   }
 
   ingress {
@@ -34,6 +34,7 @@ resource "aws_security_group" "allow" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP open"
   }
 
   egress {
@@ -41,5 +42,30 @@ resource "aws_security_group" "allow" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "all access open outbound"
   }
+}
+
+# EC2 Instance
+resource "aws_instance" "my_instance" {
+  key_name               = aws_key_pair.my_key.key_name
+  vpc_security_group_ids = [aws_security_group.my_sec_grp.id]
+  instance_type          = var.ec2_instance_type
+  ami                    = var.ec2_instance_image
+  subnet_id              = aws_default_subnet.default_az1.id
+
+  root_block_device {
+    volume_size = var.ec2_instance_volume
+    volume_type = var.ec2_instance_volume_type
+  }
+
+  tags = {
+    Name = "devops-server"
+  }
+}
+
+# Elastic IP
+resource "aws_eip" "my_eip" {
+  instance = aws_instance.my_instance.id
+  domain   = "vpc"
 }
