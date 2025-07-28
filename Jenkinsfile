@@ -6,13 +6,6 @@ pipeline {
         IMAGE_NAME = "${DOCKERHUB_USER}/node-app"
     }
 
-    stages {
-        stage('Clone Code') {
-            steps {
-                echo "Using code already checked out by Jenkins"
-            }
-        }
-
         stage('Build & Push Docker Image') {
             steps {
                 script {
