@@ -3,12 +3,16 @@ pipeline {
 
     environment {
         GIT_COMMIT = "${env.GIT_COMMIT ?: 'latest'}"
-        IMAGE = "tejasparab17/node-app:${GIT_COMMIT}"
-        SSH_KEY_PATH = '/var/lib/jenkins/.ssh/devops-server-key'
+        IMAGE = "tptejas17/devops-nodejs-app:${GIT_COMMIT}"  // your DockerHub image
+        SSH_KEY_PATH = '/var/lib/jenkins/.ssh/devops-server-key' 
     }
 
     stages {
-        // REMOVE Checkout stage since it's already handled by Pipeline from SCM
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Tptejas17/CaseStudyDevopsTA.git'
+            }
+        }
 
         stage('Build & Push Docker Image') {
             steps {
