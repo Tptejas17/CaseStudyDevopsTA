@@ -1,24 +1,29 @@
-- name: Deploy Node.js App from DockerHub on Localhost (WSL)
-  hosts: localhost
+- name: Deploy Node.js App with Docker
+  hosts: app_server
   become: yes
   tasks:
-    - name: Ensure Docker is installed
+    - name: Install Docker on Ubuntu
       apt:
         name: docker.io
         state: present
         update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
 
-    - name: Pull Docker image
-      docker_image:
-        name: tejasparab17/node-app
+    - name: Start Docker Service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull Node.js App Image from DockerHub
+      community.docker.docker_image:
+        name: tejasparab17/node-app:latest
         source: pull
 
-    - name: Run Docker container
-      docker_container:
-        name: nodeapp
-        image: tejasparab17/node-app
-        state: started
-        restart_policy: always
+    - name: Run Node.js Container
+      community.docker.docker_container:
+        name: nodejs-app
+        image: tejasparab17/node-app:latest
         ports:
-          - "3000:3000"
-
+          - "80:3000"
+        state: started
